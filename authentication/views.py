@@ -61,3 +61,54 @@ class RegisterView(APIView):
                         "data": None}
             return Response(data=response,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyOtpView(APIView):
+    """
+    API endpoint for verification of registered User.
+    It returns success response of verify otp or error.
+    """
+    def post(self, request):
+
+        # Retrieve the otp entered by user
+        user_otp = request.data.get('otp')
+
+        # check if the user not entered data
+        if user_otp is None:
+            response = {
+                        "status": False,
+                        "message": "Provide OTP!!",
+                        "data": None
+                    }
+            return Response(data=response,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the VerifyOtp object with the given OTP
+        if VerifyOtp.objects.filter(otp=user_otp).exists():
+            otp = VerifyOtp.objects.get(otp=user_otp)
+            user = otp.user
+
+            # If user is verified then set user activation status to True
+            if user:
+                user.is_active = True
+                user.save()
+
+                # Delete the otp so further reuse of otp is not possible
+                otp.delete()
+
+                # Return a success response.
+                response = {
+                            "status": True,
+                            "message": "OTP Verified!!Registration is successfull!!"
+                        }
+                return Response(data=response,
+                                status=status.HTTP_200_OK)
+        else:
+            # If the OTP is incorrect, return an error message
+            response = {
+                        "status": False,
+                        "message": "OTP is incorrect!!",
+                        "data": None
+                    }
+            return Response(data=response,
+                            status=status.HTTP_400_BAD_REQUEST)
