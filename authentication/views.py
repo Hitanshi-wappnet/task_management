@@ -227,3 +227,53 @@ class ForgetPasswordView(APIView):
                     }
             return Response(data=response,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyOtpForgetPasswordView(APIView):
+    """
+    This view handles verifying an OTP of Forget Password user.
+    If the otp is verified then generate new token else get error message.
+    """
+    def post(self, request):
+
+        # get the otp entered by user
+        new_otp = request.data.get('otp')
+
+        # check if user not entered data
+        if new_otp is None:
+            response = {
+                        "status": False,
+                        "message": "Provide OTP!!",
+                        "data": None
+                    }
+            return Response(data=response,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the Verifyotp object with the given OTP
+        if VerifyOtp.objects.filter(otp=new_otp).exists():
+            forget_password = VerifyOtp.objects.get(otp=new_otp)
+            user = forget_password.user
+
+            if user:
+                # Delete the user's old auth token and generate a new one
+                token = Token.objects.get(user=forget_password.user)
+                token.delete()
+                forget_password.delete()
+                token = Token.objects.create(user=user)
+                # Return a success response.
+                response = {
+                            "status": True,
+                            "message": "OTP Verified SuccessFully!!",
+                            "Token": token.key
+                        }
+                return Response(data=response,
+                                status=status.HTTP_200_OK)
+        else:
+            # If the OTP is incorrect, return an error message
+            response = {
+                        "status": False,
+                        "message": "OTP is incorrect!!",
+                        "data": None
+                    }
+            return Response(data=response,
+                            status=status.HTTP_400_BAD_REQUEST)
