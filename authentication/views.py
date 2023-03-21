@@ -34,8 +34,8 @@ class RegisterView(APIView):
             Otp.save()
 
             # Send an email to the user containing the OTP
-            subject = "Forget password"
-            message = "Here is the otp to Reset your password." + str(otp)
+            subject = "OTP For Registration"
+            message = "Here is the otp to Register your account." + str(otp)
             send_mail(
                 subject,
                 message,
