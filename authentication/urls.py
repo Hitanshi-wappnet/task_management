@@ -8,5 +8,7 @@ urlpatterns = [
     path("forgetpassword/", views.ForgetPasswordView.as_view(),
          name="forgetpassword"),
     path("forgetpasswordverifyotp/", views.VerifyOtpForgetPasswordView.as_view(),
-         name="forgetpasswordverifyotp")
+         name="forgetpasswordverifyotp"),
+    path("resetpassword/", views.ResetPasswordView.as_view(),
+         name='resetpassword')
 ]
