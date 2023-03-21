@@ -9,18 +9,24 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import environ
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f&5$s!(0h-yo(hm%!0bj877f0ro)h6ki5bg7wrobxe67ky&)9k'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'authentication',
 ]
 
 MIDDLEWARE = [
@@ -74,9 +83,13 @@ WSGI_APPLICATION = 'configuration.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "task_management",
+        "USER": "root",
+        "PASSWORD": "",
+        "HOST": "localhost",
+        "PORT": "3306",
     }
 }
 
@@ -121,3 +134,23 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.TokenAuthentication",
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}
+
+
+EMAIL_BACKEND = env("EMAIL_BACKEND")
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+EMAIL_PORT = env("EMAIL_PORT")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+
+# GRP_EMPLOYEE = ['EMPLOYEE']
+# GRP_MANAGER = ['MANAGER']
