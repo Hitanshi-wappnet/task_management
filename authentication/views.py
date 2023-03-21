@@ -6,6 +6,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from authentication.models import VerifyOtp
 from django.core.mail import send_mail
+from django.contrib.auth.models import User
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.authtoken.models import Token
 
 
 class RegisterView(APIView):
@@ -34,8 +37,8 @@ class RegisterView(APIView):
             Otp.save()
 
             # Send an email to the user containing the OTP
-            subject = "Forget password"
-            message = "Here is the otp to Reset your password." + str(otp)
+            subject = "OTP For Registration"
+            message = "Here is the otp to Register your account." + str(otp)
             send_mail(
                 subject,
                 message,
@@ -112,3 +115,54 @@ class VerifyOtpView(APIView):
                     }
             return Response(data=response,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(APIView):
+    """
+    API view for user login.User can be authenticated using email and password.
+    If user is verified then get token key otherwise get error.
+    """
+    def post(self, request):
+
+        # Getting the detail entered by user
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        # check if the user not entered data
+        if email is None or password is None:
+            response = {
+                        "status": False,
+                        "message": "Provide email and password",
+                        "data": None
+                    }
+            return Response(data=response,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Login logic using AuthTokenSerializer
+        if User.objects.filter(email=email).exists():
+            username = User.objects.get(email=email).username
+            data = {
+                "username": username,
+                "password": password
+            }
+            serializer = AuthTokenSerializer(data=data)
+            if serializer.is_valid():
+                user = serializer.validated_data['user']
+
+                # generate or get token for user
+                token, _ = Token.objects.get_or_create(user=user)
+
+                # Return success response
+                response = {
+                    "status": True,
+                    "message": "Login is Successful!!",
+                    "token": token.key,
+                }
+                return Response(data=response, status=status.HTTP_202_ACCEPTED)
+            else:
+                response = {
+                    "status": False,
+                    "message": "Provide correct email and password",
+                    "data": None,
+                }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
