@@ -166,3 +166,64 @@ class LoginView(APIView):
                     "data": None,
                 }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ForgetPasswordView(APIView):
+    """
+    API endpoint for Forget password.
+    It returns success response of email getting otp or error message.
+    """
+    def post(self, request):
+
+        # retrieve email id entered by user
+        email = request.data.get('email')
+
+        # Check if email was provided in the request
+        if email is None:
+            response = {
+                    "status": False,
+                    "message": "Provide email address!!",
+                    "data": None
+                }
+            return Response(data=response,
+                            status=status.HTTP_200_OK)
+
+        # Check if a user with that email exists
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+
+            # Generate a random 4-digit OTP and save it in the database
+            otp = random.randint(1000, 9999)
+            generated_otp = otp
+
+            # Save the OTP to the database
+            Forget_password = VerifyOtp(user=user, otp=generated_otp)
+            Forget_password.save()
+
+            # Send an email to the user containing the OTP
+            subject = "Forget password"
+            message = "Here is the otp to Reset your password." + str(otp)
+            send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [user.email],
+                fail_silently=False
+            )
+
+            # Return a success response.
+            response = {
+                    "status": True,
+                    "message": "Email sent to Reset your password!!"
+                }
+            return Response(data=response,
+                            status=status.HTTP_200_OK)
+        else:
+            # If no user with that email exists, return an error message
+            response = {
+                        "status": False,
+                        "message": "Provide correct email id!!",
+                        "data": None
+                    }
+            return Response(data=response,
+                            status=status.HTTP_400_BAD_REQUEST)
