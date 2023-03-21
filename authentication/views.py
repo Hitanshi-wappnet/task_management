@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import User
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
 
 
 class RegisterView(APIView):
@@ -274,6 +275,50 @@ class VerifyOtpForgetPasswordView(APIView):
                         "status": False,
                         "message": "OTP is incorrect!!",
                         "data": None
+                    }
+            return Response(data=response,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordView(APIView):
+
+    # Allow only authenticated users
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+
+        # retrieve username and new password from user entered data
+        username = request.data.get("username")
+        new_password = request.data.get("newpassword")
+
+        if username is None or new_password is None:
+            response = {
+                        "status": False,
+                        "message": "Provide username and newpassword.",
+                        "data": None,
+                    }
+            return Response(data=response,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the user object based on the username
+        if User.objects.filter(username=username).exists():
+            u = User.objects.get(username=username)
+
+            # Set the user's password to the new password and save
+            u.set_password(new_password)
+            u.save()
+
+            # Return a success response.
+            response = {
+                    "status": True,
+                    "message": "Password Changed Successfully.",
+            }
+            return Response(data=response, status=status.HTTP_200_OK)
+        else:
+            response = {
+                        "status": False,
+                        "message": "Provide Correct credentials.",
+                        "data": None,
                     }
             return Response(data=response,
                             status=status.HTTP_400_BAD_REQUEST)
