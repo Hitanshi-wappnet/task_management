@@ -7,5 +7,5 @@ urlpatterns = [
     path("<int:pk>", views.TaskView.as_view(),
          name='task'),
     path('search/', views.SearchTaskView.as_view(), name='searchtaskview'),
-    # path('assignTask/', views.AssignTaskView.as_view(), name='assignTask')
+    path('assignTask/', views.AssignTaskView.as_view(), name='assignTask')
 ]

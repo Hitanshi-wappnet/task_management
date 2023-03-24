@@ -409,3 +409,79 @@ class SearchTaskView(APIView):
             }
         return Response(data=response, status=status.HTTP_200_OK)
 
+
+class AssignTaskView(APIView):
+    permission_classes = [IsAuthenticated, ]
+
+    # views for assigning Tasks
+    def post(self, request):
+        manager = request.user
+
+        # check if the requested user is manager or not
+        if manager.groups.filter(name='Manager').exists():
+
+            # convert username provided by user with user id
+            username = request.data.get("manager")
+            title = request.data.get("task")
+
+            # If user does not enter data
+            if username is None or title is None:
+                response = {
+                    "status": False,
+                    "message": "Provide credentials of username and title",
+                    "data": None
+                }
+                return Response(data=response,
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            # check if given user with username exist or not
+            if User.objects.filter(username=username).exists():
+                manager_id = User.objects.get(username=username).id
+
+                # convert task title provided by user with task id
+                task_id = Task.objects.get(title=title).id
+                task = Task.objects.get(title=title)
+
+                # dictionary for retrieving entered data by user
+                taskdata = {
+                    "Task": task_id,
+                    "manager": manager_id,
+                    "employee": str(task.user)
+                }
+                # Save the data entered by user with serializer
+                serializer = ManagerSerializer(data=taskdata)
+                if serializer.is_valid():
+                    serializer.save()
+                    response = {
+                        "status": True,
+                        "message": "Task is assigned to Employee!!"
+                    }
+                    return Response(data=response, status=status.HTTP_201_CREATED)
+
+                # if there is issue in serializer then returns error
+                else:
+                    response = {
+                        "status": False,
+                        "message": serializer.errors,
+                        "data": None
+                    }
+                    return Response(data=response,
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+            # If the user entered wrong credentials then return an response
+            else:
+                response = {
+                    "status": False,
+                    "message": "Provide correct Credentials",
+                    "data": None
+                }
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+        # returns response if User is not authorized to add task
+        else:
+            response = {
+                    "status": False,
+                    "message": "You are not authorized to assign Tasks",
+                    "data": None
+                }
+            return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
