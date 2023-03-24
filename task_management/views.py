@@ -369,3 +369,43 @@ class TaskView(APIView):
             return Response(data=response,
                             status=status.HTTP_400_BAD_REQUEST)
 
+
+class SearchTaskView(APIView):
+    permission_classes = [IsAuthenticated, ]
+
+    def post(self, request):
+
+        # Get the data which has to be search
+        search_field = request.data.get("title")
+
+        # If user does not provide any title then return an response
+        if search_field is None:
+            response = {
+                "status": False,
+                "message": "Please provide title which you want to search",
+                "data": None
+            }
+            return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+        # check if serched data is present in database or not
+        tasks = Task.objects.filter(title__icontains=search_field)
+        serializer = TaskSerializer(tasks, many=True)
+
+        # return error response if there are no tasks
+        if serializer.data == []:
+            response = {
+                "status": False,
+                "message": "There are no tasks containing this title",
+                "data": None
+            }
+            return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+        # returns success response if tasks are present
+        else:
+            response = {
+                "status": True,
+                "message": "Here are the tasks containing this title",
+                "data": serializer.data
+            }
+        return Response(data=response, status=status.HTTP_200_OK)
+
