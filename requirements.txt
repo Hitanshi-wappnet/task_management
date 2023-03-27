@@ -1,2 +1,4 @@
+Django==4.1.7
 djangorestframework==3.14.0
 pip-chill==1.0.1
+django_environ==0.10.0
