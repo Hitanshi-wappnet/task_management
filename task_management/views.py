@@ -133,13 +133,13 @@ class TaskView(APIView):
                     # notification to User by mail
                     subject = "Task Created "
                     message = "The task is created!Please check the task"
-                    # send_mail(
-                    #     subject,
-                    #     message,
-                    #     settings.EMAIL_HOST_USER,
-                    #     [email],
-                    #     fail_silently=False
-                    # )
+                    send_mail(
+                        subject,
+                        message,
+                        settings.EMAIL_HOST_USER,
+                        [email],
+                        fail_silently=False
+                    )
                     task = serializer.save()
                     response = {
                         "status": True,
@@ -223,13 +223,13 @@ class TaskView(APIView):
                     # notification to User by mail
                     subject = "Task Updated "
                     message = "The task assigned to you is updated!Please check it"
-                    # send_mail(
-                    #     subject,
-                    #     message,
-                    #     settings.EMAIL_HOST_USER,
-                    #     [email],
-                    #     fail_silently=False
-                    # )
+                    send_mail(
+                        subject,
+                        message,
+                        settings.EMAIL_HOST_USER,
+                        [email],
+                        fail_silently=False
+                    )
                     serializer.save()
                     response = {
                         "status": True,
