@@ -1,0 +1,24 @@
+[
+    {
+      "model": "task_management.Task",
+      "pk": 1,
+      "fields": {
+        "title": "Task fixture",
+        "description": "Task realted to photography",
+        "created_date": "2023-03-27",
+        "due_date": "2023-04-23",
+        "user": 16
+      }
+    },
+    {
+      "model": "task_management.Task",
+      "pk": 2,
+      "fields": {
+        "title": "Task fixture",
+        "description": "Task related to email",
+        "created_date": "2023-03-27",
+        "due_date": "2023-04-23",
+        "user": 16
+      }
+    }
+  ]
